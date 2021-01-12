@@ -1,0 +1,46 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: npm install
+      - save_cache:
+          key: "npm_packages"
+          paths:
+            /src/node_modules
+      - run: npm run lint
+  test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: npm install
+      - restore_cache:
+          keys: 
+            - "npm_packages"
+      - run: npm run test
+  analyse:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: 
+            - "npm_packages"
+      - run: npm audit
+workflows:
+  # Name the workflow "welcome"
+  welcome:
+    # Run the welcome/run job in its own container
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+      - analyse:
+          requires:
+            - test
+    
+
